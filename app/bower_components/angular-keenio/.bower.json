@@ -1,0 +1,55 @@
+{
+  "name": "angular-keenio",
+  "license": "MIT",
+  "main": [
+    "dist/angular-keenio.js"
+  ],
+  "description": "Keen.io directives for AngularJS",
+  "keywords": [
+    "angular",
+    "analytics",
+    "metrics",
+    "tracking",
+    "logging",
+    "stats",
+    "pageviews",
+    "keen",
+    "keen.io",
+    "keen-io"
+  ],
+  "homepage": "https://github.com/theborakompanioni/angular-keenio",
+  "authors": [
+    {
+      "name": "tbk",
+      "email": "theborakompanioni+angular-keenio@gmail.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/theborakompanioni/angular-keenio.git"
+  },
+  "ignore": [
+    "src",
+    "test",
+    "gulpfile.js",
+    "karma-*.conf.js",
+    "dist/coverage"
+  ],
+  "dependencies": {
+    "keen-js": "~3.2.3"
+  },
+  "devDependencies": {
+    "angular-mocks": ">=1.2.0",
+    "angular-scenario": ">=1.2.0",
+    "angular": ">=1.2.0"
+  },
+  "_release": "11796584fa",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "11796584fa5294ed558ca50b7e67ef976b883d2b"
+  },
+  "_source": "git://github.com/theborakompanioni/angular-keenio.git",
+  "_target": "master",
+  "_originalSource": "theborakompanioni/angular-keenio"
+}

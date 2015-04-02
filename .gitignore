@@ -1,0 +1,13 @@
+node_modules/
+
+build/
+dist/
+!app/bower_components/*/dist/
+
+.DS_Store
+*.log
+*.iml
+.idea
+.tmp
+.sass-cache
+
