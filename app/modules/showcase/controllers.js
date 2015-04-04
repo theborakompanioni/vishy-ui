@@ -86,6 +86,24 @@
               });
 
             monitors.push(piwikMonitor);
+
+            var googleMonitor = VisSense.Client.Google(window.ga || function() {})
+              .monitors({
+                projectId: elementId
+              }).custom(visobj, {
+                strategy: [
+                  new VisSense.VisMon.Strategy.UserActivityStrategy({
+                    inactiveAfter: $scope.model.inactiveAfter
+                  }),
+                  new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
+                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
+                  new VisSense.VisMon.Strategy.UserActivityStrategy({
+                    inactiveAfter: 15000
+                  })
+                ]
+              });
+
+            monitors.push(googleMonitor);
           });
 
           VisUtils.forEach(monitors, function (monitor) {
