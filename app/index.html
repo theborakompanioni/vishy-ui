@@ -61,6 +61,22 @@
 
     </script>
 
+    <!-- Piwik -->
+    <script type="text/javascript">
+      var _paq = _paq || [];
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="//localhost:1080/piwik/";
+        _paq.push(['setTrackerUrl', u+'piwik.php']);
+        _paq.push(['setSiteId', 1]);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <noscript><p><img src="//localhost:1080/piwik/piwik.php?idsite=1" style="border:0;" alt="" /></p></noscript>
+    <!-- End Piwik Code -->
+
     <!--script src="bower_components/vissense-timer/dist/vissense.timer.js"></script>
     <script src="bower_components/vissense-metrics/dist/vissense.metrics.js"></script-->
 
@@ -101,6 +117,7 @@
     <script src="lib/vissense-simple-client-monitor/index.js"></script>
     <script src="lib/vissense-simple-vishy-client-monitor/index.js"></script>
     <script src="lib/vissense-simple-keenio-client-monitor/index.js"></script>
+    <script src="lib/vissense-simple-piwik-client-monitor/index.js"></script>
 
     <script src="bower_components/angular-keenio/dist/angular-keenio.js"></script>
 

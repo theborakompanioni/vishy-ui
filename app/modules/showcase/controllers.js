@@ -1,4 +1,4 @@
-(function (angular) {
+(function (window, angular) {
   'use strict';
 
   angular.module('org.tbk.vishy.ui.showcase.controllers')
@@ -68,6 +68,24 @@
               });
 
             monitors.push(vishyMonitor);
+
+            var piwikMonitor = VisSense.Client.Piwik(window._paq || [])
+              .monitors({
+                projectId: elementId
+              }).custom(visobj, {
+                strategy: [
+                  new VisSense.VisMon.Strategy.UserActivityStrategy({
+                    inactiveAfter: $scope.model.inactiveAfter
+                  }),
+                  new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
+                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
+                  new VisSense.VisMon.Strategy.UserActivityStrategy({
+                    inactiveAfter: 15000
+                  })
+                ]
+              });
+
+            monitors.push(piwikMonitor);
           });
 
           VisUtils.forEach(monitors, function (monitor) {
@@ -99,4 +117,4 @@
         });
       }])
   ;
-})(angular);
+})(window, angular);
