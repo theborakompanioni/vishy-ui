@@ -51,6 +51,7 @@
               hidden: $scope.model.hidden
             });
 
+            /*
             var vishyMonitor = VisSense.Client.Vishy(tbkVishyConfig, $http)
               .monitors({
                 projectId: elementId
@@ -60,15 +61,53 @@
                     inactiveAfter: $scope.model.inactiveAfter
                   }),
                   new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
-                  new VisSense.VisMon.Strategy.UserActivityStrategy({
-                    inactiveAfter: 15000
-                  })
+                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30})
                 ]
               });
 
-            monitors.push(vishyMonitor);
+            monitors.push(vishyMonitor);*/
 
+            VisSense.Monitor.Builder(visobj)
+              .strategy(new VisSense.VisMon.Strategy.UserActivityStrategy({
+                inactiveAfter: $scope.model.inactiveAfter
+              }))
+              .strategy(new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}))
+              .strategy(new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}))
+              .on('visible', function() {
+                console.log(elementId, ' became visible.');
+              })
+              .strategy(new VisSense.VisMon.Strategy.MetricsStrategy())
+              .strategy(VisSense.Helpers.createPercentageTimeTestEventStrategy('ptt50/1', {
+                percentageLimit: 0.5,
+                timeLimit: 1000,
+                interval: 100
+              }))
+              .on('ptt50/1', function(data) {
+                console.log(elementId, ' successfully finished 50/1 Test!');
+                console.table(data);
+              })
+              .strategy(VisSense.Helpers.createPercentageTimeTestEventStrategy('ptt100/3', {
+                percentageLimit: 1,
+                timeLimit: 3000,
+                interval: 300
+              }))
+              .on('ptt100/3', function(data) {
+                console.log(elementId, ' successfully finished 100/3 Test!');
+                console.table(data);
+              })
+              .strategy(VisSense.Helpers.createTimeReportEventStrategy('time-summary'))
+              .on('time-summary', function(timeReport) {
+                console.log(elementId, 'observation lastet ' + timeReport.duration + 'ms');
+              })
+              .strategy(VisSense.Helpers.newInitialStateEventStrategy('initial-state'))
+              .on('initial-state', function(state) {
+                console.log(elementId, '\'s initial state is', state.state);
+              })
+              .build(function(monitorByBuilder) {
+                monitors.push(monitorByBuilder);
+              });
+
+            /*
             var piwikMonitor = VisSense.Client.Piwik(window._paq || [])
               .monitors({
                 projectId: elementId
@@ -78,15 +117,13 @@
                     inactiveAfter: $scope.model.inactiveAfter
                   }),
                   new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
-                  new VisSense.VisMon.Strategy.UserActivityStrategy({
-                    inactiveAfter: 15000
-                  })
+                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30})
                 ]
               });
 
             monitors.push(piwikMonitor);
-
+             */
+            /*
             var googleMonitor = VisSense.Client.Google(window.ga || function () {
             })
               .monitors({
@@ -97,14 +134,13 @@
                     inactiveAfter: $scope.model.inactiveAfter
                   }),
                   new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
-                  new VisSense.VisMon.Strategy.UserActivityStrategy({
-                    inactiveAfter: 15000
-                  })
+                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30})
                 ]
               });
 
             monitors.push(googleMonitor);
+            */
+            /*
 
 
             var segmentIoMonitor = VisSense.Client.SegmentIO(window.analytics || {
@@ -120,14 +156,12 @@
                     inactiveAfter: $scope.model.inactiveAfter
                   }),
                   new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
-                  new VisSense.VisMon.Strategy.UserActivityStrategy({
-                    inactiveAfter: 15000
-                  })
+                  new VisSense.VisMon.Strategy.EventStrategy({debounce: 30})
                 ]
               });
 
             monitors.push(segmentIoMonitor);
+            */
           });
 
           VisUtils.forEach(monitors, function (monitor) {

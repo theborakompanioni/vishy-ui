@@ -24,7 +24,7 @@
 
   var sessionId = uuid();
 
-  var addStandardProperties = function(data) {
+  var addStandardProperties = function (data) {
     return Utils.extend(data, {
       sessionId: sessionId,
       viewport: viewportSize()
@@ -44,7 +44,7 @@
         console.info('successfully sent event ' + eventCollection);
       }
 
-      if(console.table) {
+      if (console.table) {
         console.table(data);
       }
     });
@@ -68,12 +68,12 @@
   };
 
   var sendPercentageTimeTestEventStrategy = (function () {
-    return function (client, config) {
+    return function (client, monitorId, config) {
       var sendPercentageTimeTestEvent = function (percentageTimeTestReport) {
         console.log('[PercentageTimeTestEventStrategy] send event');
 
         send(client, 'visibility-percentage-time-test', {
-          monitorId: config.monitorId,
+          monitorId: monitorId,
           test: percentageTimeTestReport
         });
       };
@@ -103,27 +103,15 @@
         };
       };
 
-      var cancel50_1Test = Utils.noop;
-      var cancel100_3Test = Utils.noop;
+      var cancel = Utils.noop;
 
       return {
         init: function (monitor) {
           console.log('[PercentageTimeTestEventStrategy] init');
-          cancel50_1Test = registerPercentageTimeTestHook(monitor, {
-            percentageLimit: 0.5,
-            timeLimit: 1000,
-            interval: 100
-          });
-
-          cancel100_3Test = registerPercentageTimeTestHook(monitor, {
-            percentageLimit: 1,
-            timeLimit: 3000,
-            interval: 300
-          });
+          cancel = registerPercentageTimeTestHook(monitor, config);
         },
         stop: function () {
-          cancel50_1Test();
-          cancel100_3Test();
+          cancel();
           console.log('[PercentageTimeTestEventStrategy] stop');
         }
       };
@@ -199,29 +187,44 @@
       config.strategy = [config.strategy];
     }
 
+    var decoratedClient = {
+      addEvent: function (eventCollection, data, consumer) {
+        client.addEvent(eventCollection, data, consumer);
+      }
+    };
+
     config.strategy = config.strategy.concat([
       new VisSense.VisMon.Strategy.MetricsStrategy(),
-      sendPercentageTimeTestEventStrategy(client, options),
-      sendInitialRequestEventStrategy(client, options),
-      sendTimeReportEventStrategy(client, options)
+      sendPercentageTimeTestEventStrategy(decoratedClient, {
+        percentageLimit: 0.5,
+        timeLimit: 1000,
+        interval: 100
+      }),
+      sendPercentageTimeTestEventStrategy(decoratedClient, {
+        percentageLimit: 1,
+        timeLimit: 3000,
+        interval: 300
+      }),
+      sendInitialRequestEventStrategy(decoratedClient, options),
+      sendTimeReportEventStrategy(decoratedClient, options)
     ]);
 
     return config;
   };
 
-  return function(client) {
+  return function (client) {
     if (!Utils.isFunction(VisSense.VisMon.Strategy.MetricsStrategy)) {
       throw new Error('Cannot load MetricsStrategy. Is it included?');
     }
 
     return {
-      monitors: function() {
+      monitors: function () {
         return {
-          standard: function(visobj) {
+          standard: function (visobj) {
             var monitorConfig = createMonitorConfig(client, {});
             return visobj.monitor(monitorConfig);
           },
-          custom: function(visobj, options) {
+          custom: function (visobj, options) {
             var monitorConfig = createMonitorConfig(client, options);
             return visobj.monitor(monitorConfig);
           }
