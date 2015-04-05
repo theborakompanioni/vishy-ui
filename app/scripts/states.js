@@ -27,6 +27,16 @@
           url: '/overview',
           templateUrl: 'partials/info.html',
           controller: 'NoopCtrl'
+        })
+        .state('app', {
+          abstract: true,
+          url: '/app',
+          template: '<ui-view/>'
+        })
+        .state('app.login', {
+          url: '/login',
+          templateUrl: 'partials/login.html',
+          controller: 'NoopCtrl'
         });
     })
 
