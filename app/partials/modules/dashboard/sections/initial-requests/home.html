@@ -39,40 +39,29 @@
 
 
 <div class="row">
-  <div class="col-sm-4">
+  <div class="col-md-8">
     <div class="chart-wrapper">
       <div class="chart-title">
-        Initial Requests by Browser
+        Requests by Visibility State (absolute)
       </div>
       <div class="chart-stage">
-        <div tbk-vishy-initial-browser-piechart>
+        <div tbk-vishy-default-areachart
+             analysis-type="count"
+             event-collection="visibility-initial-request"
+             is-stacked="false"
+             group-by="state.state">
           Here should be a chart.
         </div>
       </div>
       <div class="chart-notes">
-        Distribution between initial and subsequent requests.
       </div>
     </div>
   </div>
+
   <div class="col-sm-4">
     <div class="chart-wrapper">
       <div class="chart-title">
-        Initial Requests / Subsequent Requests
-      </div>
-      <div class="chart-stage">
-        <div tbk-vishy-initial-request-frequency-piechart>
-          Here should be a chart.
-        </div>
-      </div>
-      <div class="chart-notes">
-        Distribution between initial and subsequent requests.
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-4">
-    <div class="chart-wrapper">
-      <div class="chart-title">
-        Initial Requests by Visibility
+        Initial Requests by Visibility State (relative)
       </div>
       <div class="chart-stage">
         <div tbk-vishy-initial-request-visibility-piechart>

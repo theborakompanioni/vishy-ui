@@ -147,25 +147,30 @@
 
 
 <div class="row">
-  <div class="col-sm-8">
+
+  <div class="col-md-8">
     <div class="chart-wrapper">
       <div class="chart-title">
-        Sessions
+        Requests by Visibility State (absolute)
       </div>
       <div class="chart-stage">
-        <div tbk-vishy-session-areachart>
-          Here should be an areachart.
+        <div tbk-vishy-default-areachart
+             analysis-type="count"
+             event-collection="visibility-initial-request"
+             is-stacked="false"
+             group-by="state.state">
+          Here should be a chart.
         </div>
       </div>
       <div class="chart-notes">
-        This is a sample text region to describe this chart.
       </div>
     </div>
   </div>
+
   <div class="col-sm-4">
     <div class="chart-wrapper">
       <div class="chart-title">
-        Requests by Visibility State
+        Requests by Visibility State (relative)
       </div>
       <div class="chart-stage">
         <div tbk-vishy-request-by-state-piechart>
@@ -177,4 +182,24 @@
       </div>
     </div>
   </div>
+
+
+  <div class="col-md-12">
+    <div class="chart-wrapper">
+      <div class="chart-title">
+        Average Visible Time (in milliseconds)
+      </div>
+      <div class="chart-stage">
+        <div tbk-vishy-default-areachart
+             analysis-type="average"
+             event-collection="visibility-time-report"
+             target-property="report.timeVisible">
+          Here should be a chart.
+        </div>
+      </div>
+      <div class="chart-notes">
+      </div>
+    </div>
+  </div>
+
 </div>
