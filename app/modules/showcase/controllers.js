@@ -51,15 +51,18 @@
               hidden: $scope.model.hidden
             });
 
-            var simpleLoggingStandardMonitor =
-              VisSense.Client.Simple().monitorsWithLoggingClient().custom(visobj, {
-                interval: 1000,
-                throttle: 100,
-                inactiveAfter: $scope.model.inactiveAfter
-              });
+            /*
+             var simpleLoggingStandardMonitor =
+             VisSense.Client.Simple().monitorsWithLoggingClient().custom(visobj, {
+             interval: 1000,
+             throttle: 100,
+             inactiveAfter: $scope.model.inactiveAfter
+             });
 
-            monitors.push(simpleLoggingStandardMonitor);
+             monitors.push(simpleLoggingStandardMonitor);
+             */
 
+            /************** Vishy Client */
             var vishyMonitor = VisSense.Client.Vishy(tbkVishyConfig, $http)
               .monitors({
                 projectId: elementId
@@ -70,21 +73,7 @@
               });
 
             monitors.push(vishyMonitor);
-            /*
-             var vishyMonitor = VisSense.Client.Vishy(tbkVishyConfig, $http)
-             .monitors({
-             projectId: elementId
-             }).custom(visobj, {
-             strategy: [
-             new VisSense.VisMon.Strategy.UserActivityStrategy({
-             inactiveAfter: $scope.model.inactiveAfter
-             }),
-             new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-             new VisSense.VisMon.Strategy.EventStrategy({debounce: 30})
-             ]
-             });
-
-             monitors.push(vishyMonitor);*/
+            /************** Vishy Client End */
 
             /************** SegmentIo Client
              var segmentIoClient = window.analytics || {

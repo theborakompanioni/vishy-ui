@@ -1,11 +1,11 @@
 (function (VisSense, Utils) {
   'use strict';
 
-  // temporary -> Everything in here should be
-  // considered to be an own plugin
-  VisSense.Helpers = function () {
-  };
-  VisSense.Helpers.createTimeReport = function (metrics) {
+  // FIXME: temporary -> Everything in here should be considered to be moved to an own plugin
+
+  var simpleHelpers = function () {};
+
+  simpleHelpers.createTimeReport = function (metrics) {
     var report = {};
     report.timeHidden = metrics.getMetric('time.hidden').get();
     report.timeVisible = metrics.getMetric('time.visible').get();
@@ -22,10 +22,10 @@
     return report;
   };
 
-  VisSense.Helpers.newInitialStateEventStrategy = function (eventName) {
+  simpleHelpers.newInitialStateEventStrategy = function (eventName) {
     return {
       init: function (monitor) {
-        console.log('[InitialRequestEventStrategy] init');
+        console.debug('[InitialRequestEventStrategy] init');
         var stopSendingInitialRequestEvents = monitor.on('update', function (monitor) {
           var state = monitor.state();
           monitor._pubsub.publish(eventName, [state]);
@@ -35,27 +35,28 @@
     };
   };
 
-  VisSense.Helpers.createTimeReportEventStrategy = function (eventName, options) {
+  simpleHelpers.createTimeReportEventStrategy = function (eventName) {
     return {
       start: function () {
-        console.log('[TimeReportEventStrategy] start');
+        console.debug('[TimeReportEventStrategy] start');
       },
       stop: function (monitor) {
         monitor.metrics().update();
 
-        var timeReport = VisSense.Helpers.createTimeReport(monitor.metrics());
+        var timeReport = simpleHelpers.createTimeReport(monitor.metrics());
 
         monitor._pubsub.publish(eventName, [timeReport]);
 
-        console.log('[TimeReportEventStrategy] stop');
+        console.debug('[TimeReportEventStrategy] stop');
       }
     };
   };
 
   // TODO: externalize to percentage-time-test repository.
-  // should only be a strategy that emits an event
+  // - should only be a strategy that emits an event
+  // - should not depend on monitor.metrics()
   // TODO: make "publish(..)" in VisSense publicly available..
-  VisSense.Helpers.createPercentageTimeTestEventStrategy = function (eventName, options) {
+  simpleHelpers.createPercentageTimeTestEventStrategy = function (eventName, options) {
     var registerPercentageTimeTestHook = function (monitor, percentageTimeTestConfig) {
       var cancelTest = Utils.noop;
       var unregisterVisibleHook = monitor.on('visible', Utils.once(function (monitor) {
@@ -66,7 +67,7 @@
           var report = {
             monitorState: monitor.state(),
             testConfig: percentageTimeTestConfig,
-            timeReport: VisSense.Helpers.createTimeReport(monitor.metrics())
+            timeReport: simpleHelpers.createTimeReport(monitor.metrics())
           };
 
           monitor._pubsub.publish(eventName, [report]);
@@ -85,7 +86,7 @@
 
     return {
       init: function (monitor) {
-        console.log('[PercentageTimeTestEventStrategy] init');
+        console.debug('[PercentageTimeTestEventStrategy] init');
 
         if (!Utils.isFunction(monitor.metrics)) {
           throw new Error('monitor.metrisc is not a function. Is a MetricsStrategy defined?');
@@ -94,10 +95,15 @@
       },
       stop: function () {
         cancel();
-        console.log('[PercentageTimeTestEventStrategy] stop');
+        console.debug('[PercentageTimeTestEventStrategy] stop');
       }
     };
   };
+
+
+  VisSense.Client = VisSense.Client || {};
+  VisSense.Client.Helpers = VisSense.Client.Helpers || {};
+  VisSense.Client.Helpers.Simple = simpleHelpers;
 
 
 })(VisSense, VisSense.Utils);

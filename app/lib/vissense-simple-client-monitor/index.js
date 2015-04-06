@@ -106,7 +106,7 @@
 
             return builder
               .strategy(new VisSense.VisMon.Strategy.MetricsStrategy())
-              .strategy(VisSense.Helpers.newInitialStateEventStrategy(r + '#initial-state'))
+              .strategy(VisSense.Client.Helpers.Simple.newInitialStateEventStrategy(r + '#initial-state'))
               .on(r + '#initial-state', function (state) {
                 send(client, 'visibility-initial-request', {
                   monitorId: monitorId,
@@ -114,7 +114,7 @@
                   state: state
                 });
               })
-              .strategy(VisSense.Helpers.createPercentageTimeTestEventStrategy(r + '#ptt50/1', {
+              .strategy(VisSense.Client.Helpers.Simple.createPercentageTimeTestEventStrategy(r + '#ptt50/1', {
                 percentageLimit: 0.5,
                 timeLimit: 1000,
                 interval: 100
@@ -125,7 +125,7 @@
                   test: data
                 });
               })
-              .strategy(VisSense.Helpers.createTimeReportEventStrategy(r + '#time-summary'))
+              .strategy(VisSense.Client.Helpers.Simple.createTimeReportEventStrategy(r + '#time-summary'))
               .on(r + '#time-summary', function (timeReport) {
                 send(client, 'visibility-time-report', {
                   monitorId: monitorId,

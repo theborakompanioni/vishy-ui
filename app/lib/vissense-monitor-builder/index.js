@@ -12,10 +12,6 @@
 
    VisSense.Monitor.Builder(visobj)
    .strategy(new VisSense.VisMon.Strategy.PollingStrategy())
-   .strategy(new VisSense.VisMon.Strategy.PollingStrategy())
-   .strategy(new VisSense.VisMon.Strategy.PollingStrategy())
-   .strategy(new VisSense.VisMon.Strategy.PollingStrategy())
-   .strategy(new VisSense.VisMon.Strategy.PollingStrategy())
    .on('fullyvisible', function() {
 
    }).on('visible', function() {
@@ -33,23 +29,17 @@
    .strategy(new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}))
    .strategy(new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}))
    .strategy(new VisSense.VisMon.Strategy.UserActivityStrategy({
-   inactiveAfter: 15000
+     inactiveAfter: 60000
    }))
-   .on('update', function(monitor) {
-   console.log(monitor.state().percentage + '%');
+   .on('percentagechange', function(monitor, newValue) {
+     console.log(newValue + '%');
    })
    .build(function(monitorByBuilder) {
-   monitorByBuilder.start();
+     monitorByBuilder.start();
    });
 
-
-   extension are possible with:
-
-   VisSense.Monitor.Builder.GoogleAnalytics() {
-   }
-
    ...
-   or Builder is extensible per prototype..
+   or Builder should also be extensible per prototype..
 
    Builder(visobj).enableGoogleAnalytics(window.ga).build().start();
 
