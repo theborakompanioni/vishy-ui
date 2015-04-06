@@ -60,12 +60,10 @@
 
         return {
           standard: function (visobj) {
-            var monitorConfig = createMonitorConfig({});
-            return VisSense.Client.Simple(client).monitors().custom(visobj, monitorConfig);
+            return VisSense.Client.Simple().monitors(client).standard(visobj);
           },
           custom: function (visobj, config) {
-            var monitorConfig = createMonitorConfig(config);
-            return VisSense.Client.Simple(client).monitors().custom(visobj, monitorConfig);
+            return VisSense.Client.Simple().monitors(client).custom(visobj, config);
           }
         };
       }

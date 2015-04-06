@@ -60,7 +60,10 @@
         return this.monitors({
           addEvent: function (eventCollection, data, consumer) {
             console.log('addEvent', eventCollection);
-            console.table(data);
+
+            if (console.table) {
+              console.table(data);
+            }
             consumer(null, data);
           }
         });
@@ -74,17 +77,43 @@
 
         return {
           standard: function (visobj) {
+            return this.custom(visobj, {
+              interval: 1000,
+              throttle: 100,
+              inactiveAfter: 60000
+            });
+          },
+          custom: function (visobj, options) {
+            var config = Utils.defaults(options, {
+              interval: 1000,
+              throttle: 100,
+              inactiveAfter: 60000
+            });
+
+            var builder = VisSense.Monitor.Builder(visobj)
+              .strategy(new VisSense.VisMon.Strategy.PollingStrategy({interval: config.interval}))
+              .strategy(new VisSense.VisMon.Strategy.EventStrategy({throttle: config.throttle}))
+              .strategy(new VisSense.VisMon.Strategy.UserActivityStrategy({
+                inactiveAfter: config.inactiveAfter
+              }));
+
+            return this.prepareBuilder(builder).build();
+          },
+          prepareBuilder: function (builder) {
             var monitorId = uuid();
 
-            var r = uuid().substring(0, 7);
+            var r = monitorId.substring(0, 7);
 
-            return VisSense.Monitor.Builder(visobj)
-              .strategy(new VisSense.VisMon.Strategy.UserActivityStrategy({
-                inactiveAfter: 60000
-              }))
-              .strategy(new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}))
-              .strategy(new VisSense.VisMon.Strategy.EventStrategy({throttle: 100}))
+            return builder
               .strategy(new VisSense.VisMon.Strategy.MetricsStrategy())
+              .strategy(VisSense.Helpers.newInitialStateEventStrategy(r + '#initial-state'))
+              .on(r + '#initial-state', function (state) {
+                send(client, 'visibility-initial-request', {
+                  monitorId: monitorId,
+                  initial: true,
+                  state: state
+                });
+              })
               .strategy(VisSense.Helpers.createPercentageTimeTestEventStrategy(r + '#ptt50/1', {
                 percentageLimit: 0.5,
                 timeLimit: 1000,
@@ -102,18 +131,10 @@
                   monitorId: monitorId,
                   report: timeReport
                 });
-              })
-              .strategy(VisSense.Helpers.newInitialStateEventStrategy(r + '#initial-state'))
-              .on(r + '#initial-state', function (state) {
-                send(client, 'visibility-initial-request', {
-                  monitorId: monitorId,
-                  initial: true,
-                  state: state
-                });
-              })
-              .build();
+              });
           }
         };
+
       }
     };
   };
