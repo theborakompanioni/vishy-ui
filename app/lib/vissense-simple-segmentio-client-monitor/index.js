@@ -32,10 +32,7 @@
 
         return {
           standard: function (visobj) {
-            return VisSense.Client.Simple(client).monitors().standard(visobj);
-          },
-          custom: function (visobj, config) {
-            return VisSense.Client.Simple(client).monitors().standard(visobj, config);
+            return VisSense.Client.Simple().monitors(client).standard(visobj);
           }
         };
       }

@@ -18,20 +18,8 @@
       monitors: function () {
         return {
           standard: function(visobj) {
-            return VisSense.Client.Simple(client).monitors()
+            return VisSense.Client.Simple().monitors(client)
               .standard(visobj);
-          },
-          custom: function(visobj, config) {
-            var monitorConfig = Utils.extend(config, {
-              //update: function () { console.log('[keen-io-monitor] update'); },
-              strategy: [
-                new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-                new VisSense.VisMon.Strategy.EventStrategy({debounce: 30})
-              ]
-            });
-
-            return VisSense.Client.Simple(client).monitors()
-              .standard(visobj, monitorConfig);
           }
         };
       }

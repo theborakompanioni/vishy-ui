@@ -67,45 +67,37 @@
 
             monitors.push(vishyMonitor);*/
 
-            VisSense.Monitor.Builder(visobj)
-              .strategy(new VisSense.VisMon.Strategy.UserActivityStrategy({
-                inactiveAfter: $scope.model.inactiveAfter
-              }))
-              .strategy(new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}))
-              .strategy(new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}))
-              .on('visible', function() {
-                console.log(elementId, ' became visible.');
-              })
-              .strategy(new VisSense.VisMon.Strategy.MetricsStrategy())
-              .strategy(VisSense.Helpers.createPercentageTimeTestEventStrategy('ptt50/1', {
-                percentageLimit: 0.5,
-                timeLimit: 1000,
-                interval: 100
-              }))
-              .on('ptt50/1', function(data) {
-                console.log(elementId, ' successfully finished 50/1 Test!');
-                console.table(data);
-              })
-              .strategy(VisSense.Helpers.createPercentageTimeTestEventStrategy('ptt100/3', {
-                percentageLimit: 1,
-                timeLimit: 3000,
-                interval: 300
-              }))
-              .on('ptt100/3', function(data) {
-                console.log(elementId, ' successfully finished 100/3 Test!');
-                console.table(data);
-              })
-              .strategy(VisSense.Helpers.createTimeReportEventStrategy('time-summary'))
-              .on('time-summary', function(timeReport) {
-                console.log(elementId, 'observation lastet ' + timeReport.duration + 'ms');
-              })
-              .strategy(VisSense.Helpers.newInitialStateEventStrategy('initial-state'))
-              .on('initial-state', function(state) {
-                console.log(elementId, '\'s initial state is', state.state);
-              })
-              .build(function(monitorByBuilder) {
-                monitors.push(monitorByBuilder);
-              });
+            var simpleLoggingStandardMonitor =
+            VisSense.Client.Simple().monitorsWithLoggingClient().standard(visobj);
+
+            monitors.push(simpleLoggingStandardMonitor);
+
+            /************** SegmentIo Client */
+            var segmentIoClient = window.analytics || {
+                track: function (event, data) {
+                  console.log('No client available for event ', event, data);
+                }
+              };
+
+            var simpleSegmentIoClientMonitor = VisSense.Client.Simple().monitors({
+              addEvent: function (eventCollection, data, consumer) {
+                console.log('addEvent via segmentio-client', eventCollection);
+                segmentIoClient.track(eventCollection, data);
+                consumer(null, data);
+              }
+            }).standard(visobj);
+
+            monitors.push(simpleSegmentIoClientMonitor);
+
+
+            /************** Piwik Client */
+            var piwikClient = window._paq || [];
+
+            var simplePiwikClientMonitor = VisSense.Client.Piwik(piwikClient).monitors({
+              projectId: elementId
+            }).standard(visobj);
+
+            monitors.push(simplePiwikClientMonitor);
 
             /*
             var piwikMonitor = VisSense.Client.Piwik(window._paq || [])

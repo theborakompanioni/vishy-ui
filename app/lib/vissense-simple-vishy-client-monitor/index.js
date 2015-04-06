@@ -3,6 +3,10 @@
 
   VisSense.Client = VisSense.Client || {}
 
+  var createBaseEndpoint = function (protocol, host, port) {
+    return protocol + '://' + host + ':' + port + '';
+  };
+
   VisSense.Client.Vishy = function(config, http) {
     if (!Utils.isFunction(VisSense.Client.Simple)) {
       throw new Error('Cannot load VisSense.Client.Simple. Is it included?');
@@ -68,27 +72,5 @@
     };
   };
 
-  var createBaseEndpoint = function (protocol, host, port) {
-    return protocol + '://' + host + ':' + port + '';
-  };
-
-  var createMonitorConfig = function (options) {
-    var config = Utils.defaults(options, {
-      //update: function () { console.log('VishyClientMonitor update'); },
-      strategy: [
-        new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-        new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
-        new VisSense.VisMon.Strategy.UserActivityStrategy({
-          inactiveAfter: 15000
-        })
-      ]
-    });
-
-    if (!Utils.isArray(config.strategy)) {
-      config.strategy = [config.strategy];
-    }
-
-    return config;
-  };
 
 })(VisSense, VisSense.Utils);
