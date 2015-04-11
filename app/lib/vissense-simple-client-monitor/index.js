@@ -90,7 +90,7 @@
               inactiveAfter: 60000
             });
 
-            var builder = VisSense.Monitor.Builder(visobj)
+            var builder = VisSense.VisMon.Builder(visobj)
               .strategy(new VisSense.VisMon.Strategy.PollingStrategy({interval: config.interval}))
               .strategy(new VisSense.VisMon.Strategy.EventStrategy({throttle: config.throttle}))
               .strategy(new VisSense.VisMon.Strategy.UserActivityStrategy({
@@ -103,30 +103,37 @@
             var monitorId = uuid();
 
             var r = monitorId.substring(0, 7);
+            var asEventName = function (eventName) {
+              return r + '#' + eventName;
+            };
+
+            var initEventName = asEventName('initial-state');
+            var status501TestPassedEventName = asEventName('ptt50/1');
+            var summaryEventName = asEventName('time-summary');
 
             return builder
               .strategy(new VisSense.VisMon.Strategy.MetricsStrategy())
-              .strategy(VisSense.Client.Helpers.Simple.newInitialStateEventStrategy(r + '#initial-state'))
-              .on(r + '#initial-state', function (state) {
+              .strategy(VisSense.Client.Helpers.Simple.newInitialStateEventStrategy(initEventName))
+              .on(initEventName, function (state) {
                 send(client, 'visibility-initial-request', {
                   monitorId: monitorId,
                   initial: true,
                   state: state
                 });
               })
-              .strategy(VisSense.Client.Helpers.Simple.createPercentageTimeTestEventStrategy(r + '#ptt50/1', {
+              .strategy(VisSense.Client.Helpers.Simple.createPercentageTimeTestEventStrategy(status501TestPassedEventName, {
                 percentageLimit: 0.5,
                 timeLimit: 1000,
                 interval: 100
               }))
-              .on(r + '#ptt50/1', function (data) {
+              .on(status501TestPassedEventName, function (data) {
                 send(client, 'visibility-percentage-time-test', {
                   monitorId: monitorId,
                   test: data
                 });
               })
-              .strategy(VisSense.Client.Helpers.Simple.createTimeReportEventStrategy(r + '#time-summary'))
-              .on(r + '#time-summary', function (timeReport) {
+              .strategy(VisSense.Client.Helpers.Simple.createTimeReportEventStrategy(summaryEventName))
+              .on(summaryEventName, function (timeReport) {
                 send(client, 'visibility-time-report', {
                   monitorId: monitorId,
                   report: timeReport

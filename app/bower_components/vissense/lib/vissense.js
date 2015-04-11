@@ -12,7 +12,7 @@
  * @memberof VisSense.Utils
  *
  * @param {function} callback The function that should be proxied.
- * @param {number} [delay] The time in milliseconds to delay the invocation.
+ * @param {number} [delay=0] The time in milliseconds to delay the invocation.
  *
  * @returns {function} A proxy function when called will defer
  * the actual function call.
@@ -50,7 +50,7 @@ function async(callback, delay) {
  * @param {function} callback The function to debounce.
  * @param {number} delay The number of milliseconds to delay.
  *
- * @returns {function} Returns a function that delays invoking `callback`
+ * @returns {function} A debounced version of the given function
  *
  * @description Returns a function that delays invoking `callback` until after
  * `delay` milliseconds have elapsed since the last time it was invoked.
@@ -58,9 +58,9 @@ function async(callback, delay) {
  * @example
  *
  * window.addEventListener('resize', VisSense.Utils.debounce(function() {
- *   console.log('resizing');
- * }, 50));
- * // => logs 'resizing' at most every 50ms while resizing the browser window
+ *   console.log('resized');
+ * }, 200));
+ * // => logs 'resized' after receiving resize events stopped for 200ms
  *
  */
 function debounce(callback, delay) {
@@ -71,28 +71,6 @@ function debounce(callback, delay) {
     cancel = defer(function () {
       callback.apply(self, args);
     }, delay);
-  };
-}
-
-function throttle(callback, delay, thisArg) {
-  var cancel = noop;
-  var last = false;
-
-  return function () {
-    var time = now();
-    var args = arguments;
-    var func = function () {
-      last = time;
-      callback.apply(thisArg, args);
-    };
-
-    if (last && time < last + delay) {
-      cancel();
-      cancel = defer(func, delay);
-    } else {
-      last = time;
-      defer(func, 0);
-    }
   };
 }
 
@@ -146,7 +124,7 @@ function defaults(dest, source) {
  * @memberof VisSense.Utils
  *
  * @param {function} callback The function to defer.
- * @param {number} [delay] The time in milliseconds to delay the invocation.
+ * @param {number} [delay=0] The time in milliseconds to delay the invocation.
  *
  * @returns {function} A function when called will cancel the invocation.
  *
@@ -505,6 +483,29 @@ function now() {
   return new Date().getTime();
 }
 
+
+/**
+ * @function
+ * @name once
+ * @memberof VisSense.Utils
+ *
+ * @param {function} callback The function to throttle.
+ * @param {number} [wait=0] The number of milliseconds to throttle invocations to.
+ *
+ * @returns {function} A throttled version of the given function
+ *
+ * @description Returns a function that is restricted to invoking `callback`
+ * once. Repeat calls to the function return the value of the first call.
+ *
+ * @example
+ *
+ * var calculateExpensiveNumber = function() { ... };
+ * var expensiveNumber = once(calculateExpensiveNumber);
+ *
+ * var a = expensiveNumber() * 3.1415 + expensiveNumber();
+ * // => exensiveNumber is actually invocing `calculateExpensiveNumber` only once
+ *
+ */
 function once(callback) {
   var called = false;
   var cache;
@@ -514,6 +515,49 @@ function once(callback) {
       called = true;
     }
     return cache;
+  };
+}
+
+/**
+ * @function
+ * @name throttle
+ * @memberof VisSense.Utils
+ *
+ * @param {function} callback The function to throttle.
+ * @param {number} [wait=0] The number of milliseconds to throttle invocations to.
+ *
+ * @returns {function} A throttled version of the given function
+ *
+ * @description Returns a function that only invokes `callback` at most once
+ * per every `wait` milliseconds.
+ *
+ * @example
+ *
+ * window.addEventListener('resize', VisSense.Utils.throttle(function() {
+ *   console.log('resizing..');
+ * }, 100));
+ * // => logs 'resizing..' at most every 100ms while resizing the browser window
+ *
+ */
+function throttle(callback, wait, thisArg) {
+  var cancel = noop;
+  var last = false;
+
+  return function () {
+    var time = now();
+    var args = arguments;
+    var func = function () {
+      last = time;
+      callback.apply(thisArg, args);
+    };
+
+    if (last && time < last + wait) {
+      cancel();
+      cancel = defer(func, wait);
+    } else {
+      last = time;
+      defer(func, 0);
+    }
   };
 }
 
@@ -835,11 +879,21 @@ function isPageVisible() {
 }
 
 /******************************************************************** events */
+
+/**
+ * @class
+ * @name PubSub
+ * @memberof VisSense
+ */
 var PubSub = (function (undefined) {
-  var fireListeners = function (topic, listeners, args) {
-    console.debug('publishing topic', topic, 'to', listeners.length, 'listeners');
-    forEach(listeners, function (listener) {
-      listener(args);
+  /**
+   * Invokes all consumers with the given arguments.
+   * @param {function[]} consumers An array of functions taking the args array as parameter.
+   * @param {*[]} args An array of arguments to pass to the function
+   */
+  var syncFireListeners = function (consumers, args) {
+    forEach(consumers, function (consumer) {
+      consumer(args);
     });
   };
 
@@ -899,9 +953,15 @@ var PubSub = (function (undefined) {
     var listeners = (this._cache[topic] || [])
       .concat(topic === this._config.anyTopicName ? [] : this._onAnyCache);
 
-    var syncOrAsyncPublish = (!this._config.async ? fireListeners : async(fireListeners));
+    var enableAsync = !!this._config.async;
+    var syncOrAsyncPublish = (enableAsync ? async(syncFireListeners) : function (listeners, args) {
+      syncFireListeners(listeners, args);
+      return noop; // cannot be cancelled
+    });
 
-    return syncOrAsyncPublish(topic, listeners, args || []);
+    console.debug('publishing topic', enableAsync ? '(async)' : '(sync)', topic, 'to', listeners.length, 'listeners');
+
+    return syncOrAsyncPublish(listeners, args || []);
   };
 
   return PubSub;
@@ -1150,14 +1210,15 @@ VisSense.fn = VisSense.prototype;
  * @name of
  * @memberof VisSense
  *
- * @returns {VisSense} The constructed VisSense object.
+ * @returns {VisSense} An initialized VisSense object.
  *
- * @description Constructs a VisSense object.
+ * @description Constructs and returns a VisSense object.
+ * This is syntactic sugar for `new VisSense(..)`.
  *
  * @example
  *
  * var myElement = document.getElementById('myElement');
- * var visElement = VisSense.of(m<Element);
+ * var visElement = VisSense.of(myElement);
  *
  */
 VisSense.of = function (element, config) {
@@ -1327,12 +1388,15 @@ function nextState(visobj, currentState) {
  * @memberof VisSense.VisMon#
  *
  * @property {VisSense.VisMon.Strategy|VisSense.VisMon.Strategy[]} [strategy=[PollingStrategy,EventStrategy]]
+ * @property {function} [start]
+ * @property {function} [stop]
  * @property {function} [update]
  * @property {function} [hidden]
  * @property {function} [visible]
  * @property {function} [fullyvisible]
  * @property {function} [percentagechange]
  * @property {function} [visibilitychange]
+ * @property {boolean} [async=false]
  *
  * A configuration object to configure a VisMon instance.
  */
@@ -1376,11 +1440,26 @@ function nextState(visobj, currentState) {
  *
  */
 function VisMon(visobj, config) {
+  var _config = defaults(config, {
+    strategy: [
+      new VisMon.Strategy.PollingStrategy(),
+      new VisMon.Strategy.EventStrategy()
+    ],
+    async: false
+  });
+
   this._visobj = visobj;
   this._state = {};
   this._started = false;
-  this._pubsub = new PubSub();
+
+  var anyTopicName = '*#' + now();
+  this._pubsub = new PubSub({
+    async: _config.async,
+    anyTopicName: anyTopicName
+  });
+
   this._events = [
+    anyTopicName,
     'start',
     'stop',
     'update',
@@ -1390,14 +1469,6 @@ function VisMon(visobj, config) {
     'percentagechange',
     'visibilitychange'
   ];
-
-  var _config = defaults(config, {
-    strategy: [
-      new VisMon.Strategy.PollingStrategy(),
-      new VisMon.Strategy.EventStrategy()
-    ],
-    async: false
-  });
 
   this._strategy = new VisMon.Strategy.CompositeStrategy(_config.strategy);
   this._strategy.init(this);
@@ -1447,6 +1518,36 @@ VisMon.prototype.visobj = function () {
 
 /**
  * @method
+ * @name publish
+ * @memberof VisSense.VisMon#
+ *
+ * @param {String} eventName The name of the event
+ * @param {*[]} args The arguments to pass to the subscribers of the event
+ *
+ * @returns Returns a function that cancels the event execution - this can only
+ * be done if the monitor has an async queue (option async enabled).
+ *
+ * @description
+ * Invokes all subscribers of the given event with the provided arguments.
+ * This method throws an error if an internal event is published.
+ *
+ * @example
+ *
+ * var monitor = VisSense(element).monitor();
+ *
+ * monitor.publish('myEvent', [arg1, arg2]);
+ */
+VisMon.prototype.publish = function (eventName, args) {
+  var isInternalEvent = this._events.indexOf(eventName) >= 0;
+  if (isInternalEvent) {
+    throw new Error('Cannot publish internal event "' + eventName + '" from external scope.');
+  }
+
+  return this._pubsub.publish(eventName, args);
+};
+
+/**
+ * @method
  * @name state
  * @memberof VisSense.VisMon#
  *
@@ -1489,15 +1590,20 @@ VisMon.prototype.state = function () {
  *
  * @returns {VisSense.VisMon} itself.
  *
- * @description Starts monitoring the provided element.#
+ * @description Starts monitoring the provided element.
+ * This will determine the element visibility once and
+ * subequentially execute every strategies `start` method.
+ * Call `stop` to stop observing the element.
  *
  * @example
+ * var myElement = document.getElementById('myElement');
  * var monitor = VisSense.of(myElement).monitor().start();
  * ...
  * monitor.stop();
  *
  * @example
  *
+ * var visobj = new VisSense(myElement);
  * var monitor = VisSense.VisMon(..., {
  *   strategy: [
  *     new ViSense.VisMon.Strategy.EventStrategy(...)
@@ -1769,6 +1875,111 @@ VisMon.prototype.on = function (topic, callback) {
   return this._pubsub.on(topic, callback);
 };
 
+
+VisMon.Builder = (function () {
+  var combineStrategies = function (config, strategies) {
+    var combinedStrategies = null;
+    var forceDisableStrategies = config.strategy === false;
+    var enableStrategies = !forceDisableStrategies && (config.strategy || strategies.length > 0);
+
+    if (!enableStrategies) {
+      if (forceDisableStrategies) {
+        combinedStrategies = [];
+      } else {
+        combinedStrategies = config.strategy;
+      }
+    } else {
+      var configStrategyIsDefined = !!config.strategy;
+      var configStrategyIsArray = isArray(config.strategy);
+      var configStrategyAsArray = configStrategyIsDefined ? (!configStrategyIsArray ?
+        [config.strategy] : config.strategy) : [];
+
+      combinedStrategies = configStrategyAsArray.concat(strategies);
+    }
+
+    return combinedStrategies;
+  };
+
+  return function (visobj) {
+    var config = {};
+    var strategies = [];
+    var events = [];
+
+    var productBuilt = false;
+    var product = null;
+
+    return {
+      set: function (name, value) {
+        config[name] = value;
+        return this;
+      },
+      strategy: function (strategy) {
+        strategies.push(strategy);
+        return this;
+      },
+      on: function (event, handler) {
+        events.push([event, handler]);
+        return this;
+      },
+      /**
+       * Creates the configured monitor.
+       *
+       * There is a special case in which all strategies
+       * are disabled and hence the caller has to take
+       * care of the update mechanism - this is especially useful
+       * for testing.
+       * This happens when the property 'strategy' is set to false
+       * or ends up being an empty array.
+       *
+       * builder.set('strategy', false);
+       * or
+       * builder.options({
+       *   strategy: false
+       * });
+       *
+       * @param [consumer] if given will return this methods result
+       * as return parameter. The built monitor is passed as first argument.
+       *
+       * @returns {*|VisSense.VisMon}
+       */
+      build: function (consumer) {
+        var manufacture = function () {
+          var combinedStrategies = combineStrategies(config, strategies);
+
+          if (combinedStrategies === []) {
+            console.debug('No strategies given - update process must be handled by caller. ');
+          }
+
+          config.strategy = combinedStrategies;
+
+          var monitor = visobj.monitor(config);
+
+          forEach(events, function (event) {
+            monitor.on(event[0], event[1]);
+          });
+
+          productBuilt = true;
+          product = monitor;
+
+          return product;
+        };
+
+        if (productBuilt) {
+          console.warn('Attempt to build an already built monitor.');
+        }
+
+        var monitor = productBuilt ? product : manufacture();
+
+        if (isFunction(consumer)) {
+          return consumer(monitor);
+        } else {
+          return monitor;
+        }
+      }
+    };
+  };
+})();
+
 /**
  * @abstract
  * @class
@@ -1998,7 +2209,7 @@ VisMon.Strategy.PollingStrategy.prototype.stop = function () {
  * @name EventStrategyConfig
  * @memberof VisSense.VisMon.Strategy.EventStrategy#
  *
- * @property {number} [debounce=50] The time in milliseconds to debounce
+ * @property {number} [throttle=50] The time in milliseconds to debounce
  * the state update. Event might fire multiple times in a short period
  * of time. If you want this feature to be disabled set debounce to 0.
  * in milliseconds.
@@ -2025,7 +2236,7 @@ VisMon.Strategy.PollingStrategy.prototype.stop = function () {
  *
  * var visMon = VisSense(...).monitor({
  *   strategy: new VisSense.VisMon.Strategy.EventStrategy({
- *      debounce: 100
+ *      throttle: 100
  *   }),
  *   update: function() {
  *     console.log('updated.');

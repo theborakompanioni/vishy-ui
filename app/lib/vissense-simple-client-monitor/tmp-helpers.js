@@ -55,7 +55,6 @@
   // TODO: externalize to percentage-time-test repository.
   // - should only be a strategy that emits an event
   // - should not depend on monitor.metrics()
-  // TODO: make "publish(..)" in VisSense publicly available..
   simpleHelpers.createPercentageTimeTestEventStrategy = function (eventName, options) {
     var registerPercentageTimeTestHook = function (monitor, percentageTimeTestConfig) {
       var cancelTest = Utils.noop;
@@ -70,7 +69,7 @@
             timeReport: simpleHelpers.createTimeReport(monitor.metrics())
           };
 
-          monitor._pubsub.publish(eventName, [report]);
+          monitor.publish(eventName, [report]);
         }, percentageTimeTestConfig);
 
         unregisterVisibleHook();

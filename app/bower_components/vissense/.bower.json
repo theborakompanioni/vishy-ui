@@ -1,6 +1,5 @@
 {
   "name": "vissense",
-  "version": "0.6.1",
   "license": "MIT",
   "main": "dist/vissense.min.js",
   "description": "",
@@ -44,13 +43,13 @@
     "jasmine-jquery": "velesin/jasmine-jquery#2.1.0",
     "jasmine-jsreporter": "detro/jasmine-jsreporter#7bcea60db1a45cc77c5a463f"
   },
-  "_release": "0.6.1",
+  "_release": "ef441ad87c",
   "_resolution": {
-    "type": "version",
-    "tag": "0.6.1",
-    "commit": "20f8df4725c7e76e67100f6021213f30f2da4d96"
+    "type": "branch",
+    "branch": "master",
+    "commit": "ef441ad87cd589dcf31f5cb6913aab4141517f36"
   },
   "_source": "git://github.com/vissense/vissense.git",
-  "_target": "0.6.1",
+  "_target": "master",
   "_originalSource": "vissense/vissense"
 }

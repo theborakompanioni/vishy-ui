@@ -5,6 +5,10 @@ See [Keep A Changelog](https://github.com/olivierlacan/keep-a-changelog)
 before changing this file!
 
 ## [Unreleased][unreleased]
+### Added
+- added method `VisMon.publish`
+- added `VisMon.Builder`
+
 ## [0.6.1] - 2015-03-17
 ### Fixed
 - prevent multiple executions of a throttled function
