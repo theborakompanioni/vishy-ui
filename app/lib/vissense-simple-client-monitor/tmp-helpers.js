@@ -28,7 +28,7 @@
         console.debug('[InitialRequestEventStrategy] init');
         var stopSendingInitialRequestEvents = monitor.on('update', function (monitor) {
           var state = monitor.state();
-          monitor._pubsub.publish(eventName, [state]);
+          monitor.publish(eventName, [monitor, state]);
           stopSendingInitialRequestEvents();
         });
       }
@@ -45,60 +45,12 @@
 
         var timeReport = simpleHelpers.createTimeReport(monitor.metrics());
 
-        monitor._pubsub.publish(eventName, [timeReport]);
+        monitor.publish(eventName, [monitor, timeReport]);
 
         console.debug('[TimeReportEventStrategy] stop');
       }
     };
   };
-
-  // TODO: externalize to percentage-time-test repository.
-  // - should only be a strategy that emits an event
-  // - should not depend on monitor.metrics()
-  simpleHelpers.createPercentageTimeTestEventStrategy = function (eventName, options) {
-    var registerPercentageTimeTestHook = function (monitor, percentageTimeTestConfig) {
-      var cancelTest = Utils.noop;
-      var unregisterVisibleHook = monitor.on('visible', Utils.once(function (monitor) {
-        cancelTest = monitor.visobj().onPercentageTimeTestPassed(function () {
-
-          monitor.metrics().update();
-
-          var report = {
-            monitorState: monitor.state(),
-            testConfig: percentageTimeTestConfig,
-            timeReport: simpleHelpers.createTimeReport(monitor.metrics())
-          };
-
-          monitor.publish(eventName, [report]);
-        }, percentageTimeTestConfig);
-
-        unregisterVisibleHook();
-      }));
-
-      return function () {
-        unregisterVisibleHook();
-        cancelTest();
-      };
-    };
-
-    var cancel = Utils.noop;
-
-    return {
-      init: function (monitor) {
-        console.debug('[PercentageTimeTestEventStrategy] init');
-
-        if (!Utils.isFunction(monitor.metrics)) {
-          throw new Error('monitor.metrisc is not a function. Is a MetricsStrategy defined?');
-        }
-        cancel = registerPercentageTimeTestHook(monitor, options);
-      },
-      stop: function () {
-        cancel();
-        console.debug('[PercentageTimeTestEventStrategy] stop');
-      }
-    };
-  };
-
 
   VisSense.Client = VisSense.Client || {};
   VisSense.Client.Helpers = VisSense.Client.Helpers || {};

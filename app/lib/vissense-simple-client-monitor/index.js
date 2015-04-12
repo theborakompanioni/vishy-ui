@@ -114,26 +114,33 @@
             return builder
               .strategy(new VisSense.VisMon.Strategy.MetricsStrategy())
               .strategy(VisSense.Client.Helpers.Simple.newInitialStateEventStrategy(initEventName))
-              .on(initEventName, function (state) {
+              .on(initEventName, function (monitor, state) {
                 send(client, 'visibility-initial-request', {
                   monitorId: monitorId,
                   initial: true,
                   state: state
                 });
               })
-              .strategy(VisSense.Client.Helpers.Simple.createPercentageTimeTestEventStrategy(status501TestPassedEventName, {
+              .strategy(VisSense.VisMon.Strategy.PercentageTimeTestEventStrategy(status501TestPassedEventName, {
                 percentageLimit: 0.5,
                 timeLimit: 1000,
                 interval: 100
               }))
-              .on(status501TestPassedEventName, function (data) {
+              .on(status501TestPassedEventName, function (monitor, data) {
+
+                var timeReport = VisSense.Client.Helpers.Simple.createTimeReport(monitor.metrics());
+
+                var dataWithTimeReport = Utils.extend(data, {
+                  timeReport: timeReport
+                });
+
                 send(client, 'visibility-percentage-time-test', {
                   monitorId: monitorId,
-                  test: data
+                  test: dataWithTimeReport
                 });
               })
               .strategy(VisSense.Client.Helpers.Simple.createTimeReportEventStrategy(summaryEventName))
-              .on(summaryEventName, function (timeReport) {
+              .on(summaryEventName, function (monitor, timeReport) {
                 send(client, 'visibility-time-report', {
                   monitorId: monitorId,
                   report: timeReport
