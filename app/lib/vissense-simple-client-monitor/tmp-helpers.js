@@ -35,8 +35,13 @@
     };
   };
 
-  simpleHelpers.createTimeReportEventStrategy = function (eventName) {
+  simpleHelpers.createSummaryEventStrategy = function (eventName) {
     return {
+      init: function(monitor) {
+        if (!Utils.isFunction(monitor.metrics) || !Utils.isFunction(VisSense.VisMon.Strategy.MetricsStrategy)) {
+          throw new Error('Cannot load MetricsStrategy. Is it included?');
+        }
+      },
       start: function () {
         console.debug('[TimeReportEventStrategy] start');
       },

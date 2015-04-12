@@ -139,7 +139,7 @@
                   test: dataWithTimeReport
                 });
               })
-              .strategy(VisSense.Client.Helpers.Simple.createTimeReportEventStrategy(summaryEventName))
+              .strategy(VisSense.Client.Helpers.Simple.createSummaryEventStrategy(summaryEventName))
               .on(summaryEventName, function (monitor, timeReport) {
                 send(client, 'visibility-time-report', {
                   monitorId: monitorId,
