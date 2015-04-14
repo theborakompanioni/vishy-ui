@@ -6,6 +6,12 @@ before changing this file!
 
 ## [Unreleased][unreleased]
 ### Added
+- added support for defining a VisSense objects reference window
+- added function `Utils.createVisibilityApi`
+- added method `VisSense.referenceWindow`
+
+## [0.7.0] - 2015-04-13
+### Added
 - added method `VisMon.publish`
 - added `VisMon.Builder`
 
@@ -67,7 +73,8 @@ before changing this file!
 ### Removed
 - removed `VisMon.NoopStrategy`
 
-[unreleased]: https://github.com/vissense/vissense/compare/0.6.1...HEAD
+[unreleased]: https://github.com/vissense/vissense/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/vissense/vissense/compare/0.6.1...0.7.0
 [0.6.1]: https://github.com/vissense/vissense/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/vissense/vissense/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/vissense/vissense/compare/0.4.0...0.5.0
