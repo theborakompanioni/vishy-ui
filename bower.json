@@ -21,10 +21,10 @@
     "tbk-angular-readable-time": "theborakompanioni/tbk-angular-readable-time#master",
     "google-code-prettify": "~1.0.3",
     "keen-js": "~3.2.3",
-    "vissense": "vissense/vissense#~0.7.0",
-    "vissense-percentage-time-test": "vissense/vissense-percentage-time-test#master",
-    "vissense-metrics": "vissense/vissense-metrics#~0.1.0",
-    "vissense-user-activity": "vissense/vissense-user-activity#0.2.1"
+    "vissense": "0.8.0",
+    "vissense-percentage-time-test": "vissense/vissense-percentage-time-test#0.5.0",
+    "vissense-metrics": "vissense/vissense-metrics#0.1.0",
+    "vissense-user-activity": "vissense/vissense-user-activity#0.3.0"
   },
   "devDependencies": {
     "angular-mocks": "1.2.18",
@@ -32,7 +32,7 @@
   },
   "resolutions": {
     "d3": "~3.4.1",
-    "vissense": "master",
+    "vissense": "0.8.0",
     "angular": "1.2.18"
   }
 }

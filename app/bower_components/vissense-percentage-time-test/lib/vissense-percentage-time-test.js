@@ -8,9 +8,9 @@ var createInnerMonitor = function (outerMonitor, callback, config) {
   var percentageLimit = config.percentageLimit;
   var interval = config.interval;
 
-  return outerMonitor.visobj().monitor({
-    strategy: new VisSense.VisMon.Strategy.PollingStrategy({interval: interval}),
-    update: function (monitor) {
+  return VisSense.VisMon.Builder(outerMonitor.visobj())
+    .strategy(new VisSense.VisMon.Strategy.PollingStrategy({interval: interval}))
+    .on('update', function (monitor) {
       console.log('[innerMonitor] update');
 
       var percentage = monitor.state().percentage;
@@ -31,21 +31,20 @@ var createInnerMonitor = function (outerMonitor, callback, config) {
         monitor.stop();
         outerMonitor.stop();
 
-        callback();
+        callback(monitor);
       }
-    },
-    stop: function () {
+    })
+    .on('stop', function () {
       console.log('[innerMonitor] stop    - after ' + timeElapsed);
       timeStarted = null;
-    }
-  });
+    }).build();
 };
 
 /**
- * @method
+ * @function
  * @name onPercentageTimeTestPassed
- * @memberof VisSense#
  *
+ * @param {DOMElement} element A DOM element
  * @param {Function} callback The function to call when the condition is fulfilled
  * @param {Object} [config] Config object
 
@@ -63,7 +62,7 @@ var createInnerMonitor = function (outerMonitor, callback, config) {
  *
  * If not provided, the check interval defaults to 1000 ms.
  */
-VisSense.fn.onPercentageTimeTestPassed = function (callback, config) {
+var onPercentageTimeTestPassed = function (visobj, callback, config) {
   var _config = VisSenseUtils.defaults(config, {
     percentageLimit: 1,
     timeLimit: 1000,
@@ -72,15 +71,16 @@ VisSense.fn.onPercentageTimeTestPassed = function (callback, config) {
   });
 
   // monitor is considered hidden if it is 1% below the percentage limit
-  var hiddenLimit = Math.max(_config.percentageLimit - 0.01, 0);
+  var hiddenLimit = Math.max(_config.percentageLimit - 0.001, 0);
 
   var innerMonitor = null;
 
-  var outerMonitor = new VisSense(this.element(), {
-    hidden: hiddenLimit
-  }).monitor({
-    strategy: _config.strategy,
-    visible: function (monitor) {
+  var outerMonitor = VisSense.VisMon.Builder(new VisSense(visobj.element(), {
+    hidden: hiddenLimit,
+    referenceWindow: visobj.referenceWindow()
+  }))
+    .set('strategy', _config.strategy)
+    .on('visible', function (monitor) {
       console.log('[outerMonitor.visible]');
 
       if (innerMonitor === null) {
@@ -89,21 +89,21 @@ VisSense.fn.onPercentageTimeTestPassed = function (callback, config) {
       }
       console.log('[outerMonitor.visible] start inner monitor');
       innerMonitor.start();
-    },
-    hidden: function () {
+    })
+    .on('hidden', function () {
       console.log('[outerMonitor.hidden] hidden');
       if (innerMonitor !== null) {
         console.log('[outerMonitor.hidden] stop inner monitor');
         innerMonitor.stop();
       }
-    },
-    stop: function () {
+    })
+    .on('stop', function () {
       if (innerMonitor !== null) {
         console.log('[outerMonitor.stop] stop inner monitor');
         innerMonitor.stop();
       }
-    }
-  });
+    })
+    .build();
 
   outerMonitor.start();
 
@@ -114,13 +114,27 @@ VisSense.fn.onPercentageTimeTestPassed = function (callback, config) {
   };
 };
 
+
+/**
+ * @method
+ * @name onPercentageTimeTestPassed
+ * @memberof VisSense#
+ *
+ * @deprecated use PercentageTimeTestEventStrategy instead
+ */
+VisSense.fn.onPercentageTimeTestPassed = function (callback, config) {
+  onPercentageTimeTestPassed(this, callback, config);
+};
+
 /**
  * @method
  * @name on50_1TestPassed
  * @memberof VisSense#
  *
+ * @deprecated use PercentageTimeTestEventStrategy instead
+ *
  * @param {Function} callback The function to call when the condition is fulfilled
- * @param {Object} [config] Config object
+ * @param {Object} [options] Config object
  *
  * @returns {undefined}
  *
@@ -128,10 +142,50 @@ VisSense.fn.onPercentageTimeTestPassed = function (callback, config) {
  * This function invokes a callback if and only if the element has been visible at least
  * 50 percent for at least 1 second. It checks the visibility in 100ms intervals.
  */
-VisSense.fn.on50_1TestPassed = function (callback, config) {
-  return this.onPercentageTimeTestPassed(callback, VisSenseUtils.extend(config || {}, {
-    percentageLimit: 0.5,
-    timeLimit: 1000,
+VisSense.fn.on50_1TestPassed = function (callback, options) {
+  var config = VisSenseUtils.extend(VisSenseUtils.defaults(options, {
     interval: 100
-  }));
+  }), {
+    percentageLimit: 0.5,
+    timeLimit: 1000
+  });
+
+  onPercentageTimeTestPassed(this, callback, config);
+};
+
+VisSense.VisMon.Strategy.PercentageTimeTestEventStrategy = function (eventName, options) {
+  var registerPercentageTimeTestHook = function (monitor, percentageTimeTestConfig) {
+    var cancelTest = VisSenseUtils.noop;
+    var unregisterVisibleHook = monitor.on('visible', VisSenseUtils.once(function (monitor) {
+      cancelTest = onPercentageTimeTestPassed(monitor.visobj(), function (innerMonitor) {
+        var report = {
+          monitorState: innerMonitor.state(),
+          testConfig: percentageTimeTestConfig
+        };
+        monitor.update();
+
+        monitor.publish(eventName, [monitor, report]);
+      }, percentageTimeTestConfig);
+
+      unregisterVisibleHook();
+    }));
+
+    return function () {
+      unregisterVisibleHook();
+      cancelTest();
+    };
+  };
+
+  var cancel = VisSenseUtils.noop;
+
+  return {
+    init: function (monitor) {
+      console.debug('[PercentageTimeTestEventStrategy] init');
+      cancel = registerPercentageTimeTestHook(monitor, options);
+    },
+    stop: function () {
+      cancel();
+      console.debug('[PercentageTimeTestEventStrategy] stop');
+    }
+  };
 };
