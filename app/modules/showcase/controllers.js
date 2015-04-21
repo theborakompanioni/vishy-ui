@@ -4,8 +4,8 @@
   angular.module('org.tbk.vishy.ui.showcase.controllers')
 
     .controller('ShowcaseCtrl', [
-      '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'tbkVishyConfig', 'tbkKeenClient',
-      function ($scope, $timeout, $http, VisSense, VisUtils, tbkVishyConfig, keenClient) {
+      '$window', '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'tbkVishyConfig', 'tbkKeenClient',
+      function ($window, $scope, $timeout, $http, VisSense, VisUtils, tbkVishyConfig, keenClient) {
         var autoStop = 90;
         $scope.model = {
           running: false,
@@ -152,9 +152,20 @@
             monitor.start();
           });
 
+          var removeBeforeUnloadStopCallback = (function() {
+            var eventId = $window.addEventListener('beforeunload', function() {
+              stop();
+            }, true);
+
+            return function() {
+              $window.removeEventListener('beforeunload', eventId, true);
+            }
+          })();
+
           var cancelAutoStop = startCountdown();
           stop = function () {
             cancelAutoStop();
+            removeBeforeUnloadStopCallback();
 
             VisUtils.forEach(monitors, function (monitor) {
               monitor.stop();
@@ -164,8 +175,8 @@
           };
         };
 
-        $scope.start = function (elementId) {
-          start(elementId);
+        $scope.start = function (elementIdOrIds) {
+          start(elementIdOrIds);
         };
 
         $scope.stop = function () {
@@ -173,8 +184,10 @@
         };
 
         $scope.$on('$destroy', function () {
+          console.log('scope destroy');
           stop();
         });
+
       }])
   ;
 })(window, angular);
