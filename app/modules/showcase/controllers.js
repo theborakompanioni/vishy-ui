@@ -4,8 +4,8 @@
   angular.module('org.tbk.vishy.ui.showcase.controllers')
 
     .controller('ShowcaseCtrl', [
-      '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'tbkVishyConfig',
-      function ($scope, $timeout, $http, VisSense, VisUtils, tbkVishyConfig) {
+      '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'tbkVishyConfig', 'tbkKeenClient',
+      function ($scope, $timeout, $http, VisSense, VisUtils, tbkVishyConfig, keenClient) {
         var autoStop = 90;
         $scope.model = {
           running: false,
@@ -62,7 +62,7 @@
              monitors.push(simpleLoggingStandardMonitor);
              */
 
-            /************** Vishy Client */
+            /************** Vishy Client *
             var vishyMonitor = VisSense.Client.Vishy(tbkVishyConfig, $http)
               .monitors({
                 projectId: elementId
@@ -73,7 +73,19 @@
               });
 
             monitors.push(vishyMonitor);
-            /************** Vishy Client End */
+            ************** Vishy Client End */
+
+            /************** Keenio Client */
+            var vishyMonitor = VisSense.Client.KeenIO(keenClient)
+              .monitors()
+              .custom(visobj, {
+                interval: 1000,
+                throttle: 100,
+                inactiveAfter: $scope.model.inactiveAfter
+              });
+
+            monitors.push(vishyMonitor);
+            /************** Keenio Client End */
 
             /************** SegmentIo Client
              var segmentIoClient = window.analytics || {
