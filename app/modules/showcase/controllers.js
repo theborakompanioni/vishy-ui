@@ -62,7 +62,7 @@
              monitors.push(simpleLoggingStandardMonitor);
              */
 
-            /************** Vishy Client *
+            /************** Vishy Client
             var vishyMonitor = VisSense.Client.Vishy(tbkVishyConfig, $http)
               .monitors({
                 projectId: elementId
@@ -73,7 +73,7 @@
               });
 
             monitors.push(vishyMonitor);
-            ************** Vishy Client End */
+            *************** Vishy Client End */
 
             /************** Keenio Client */
             var vishyMonitor = VisSense.Client.KeenIO(keenClient)
@@ -85,67 +85,7 @@
               });
 
             monitors.push(vishyMonitor);
-            /************** Keenio Client End */
-
-            /************** SegmentIo Client
-             var segmentIoClient = window.analytics || {
-                track: function (event, data) {
-                  console.log('No client available for event ', event, data);
-                }
-              };
-
-             var decoratedSegmentIoClient = {
-              track: function (event, data) {
-                console.log('addEvent via segmentio-client', event);
-
-                var _data = VisUtils.extend(data, {
-                  projectId: elementId
-                });
-                segmentIoClient.track(event, _data);
-              }
-            };
-
-             var simpleSegmentIoClientMonitor = VisSense.Client.SegmentIO(decoratedSegmentIoClient)
-             .monitors()
-             .custom(visobj, {
-                interval: 1000,
-                throttle: 100,
-                inactiveAfter: $scope.model.inactiveAfter
-              });
-
-             monitors.push(simpleSegmentIoClientMonitor); */
-
-            /************** SegmentIo Client End */
-
-
-            /************** Piwik Client
-             var piwikClient = window._paq || [];
-
-             var simplePiwikClientMonitor = VisSense.Client.Piwik(piwikClient).monitors({
-              projectId: elementId
-            })
-             .custom(visobj, {
-              interval: 1000,
-              throttle: 100,
-              inactiveAfter: $scope.model.inactiveAfter
-            });
-
-             monitors.push(simplePiwikClientMonitor); */
-
-            /************** Google Analytics Client
-             var googleMonitor = VisSense.Client.Google(window.ga || function () {
-            })
-             .monitors({
-                projectId: elementId
-              })
-             .custom(visobj, {
-                interval: 1000,
-                throttle: 100,
-                inactiveAfter: $scope.model.inactiveAfter
-              });
-
-             monitors.push(googleMonitor);
-             */
+            /************* Keenio Client End */
           });
 
           VisUtils.forEach(monitors, function (monitor) {

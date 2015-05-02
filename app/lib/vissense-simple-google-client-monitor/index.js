@@ -1,6 +1,20 @@
 (function (VisSense, Utils) {
   'use strict';
 
+  /************** Google Analytics Client Usage
+   var googleMonitor = VisSense.Client.Google(window.ga || function () {})
+   .monitors({
+      projectId: elementId
+    })
+   .custom(visobj, {
+      interval: 1000,
+      throttle: 100,
+      inactiveAfter: $scope.model.inactiveAfter
+    });
+
+   monitors.push(googleMonitor);
+   */
+
   VisSense.Client = VisSense.Client || {}
 
   VisSense.Client.Google = function (gaClient) {

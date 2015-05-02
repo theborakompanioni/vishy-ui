@@ -1,6 +1,20 @@
 (function (VisSense, Utils) {
   'use strict';
 
+  /************** Piwik Client Usage
+   var piwikClient = window._paq || [];
+
+   var simplePiwikClientMonitor = VisSense.Client.Piwik(piwikClient).monitors({
+              projectId: elementId
+            })
+   .custom(visobj, {
+              interval: 1000,
+              throttle: 100,
+              inactiveAfter: $scope.model.inactiveAfter
+            });
+
+   monitors.push(simplePiwikClientMonitor); */
+
   VisSense.Client = VisSense.Client || {}
 
   VisSense.Client.Piwik = function (piwikClient) {

@@ -1,6 +1,36 @@
 (function (VisSense, Utils) {
   'use strict';
 
+  /************** SegmentIo Client Usage
+   var segmentIoClient = window.analytics || {
+                track: function (event, data) {
+                  console.log('No client available for event ', event, data);
+                }
+              };
+
+   var decoratedSegmentIoClient = {
+              track: function (event, data) {
+                console.log('addEvent via segmentio-client', event);
+
+                var _data = VisUtils.extend(data, {
+                  projectId: elementId
+                });
+                segmentIoClient.track(event, _data);
+              }
+            };
+
+   var simpleSegmentIoClientMonitor = VisSense.Client.SegmentIO(decoratedSegmentIoClient)
+   .monitors()
+   .custom(visobj, {
+                interval: 1000,
+                throttle: 100,
+                inactiveAfter: $scope.model.inactiveAfter
+              });
+
+   monitors.push(simpleSegmentIoClientMonitor); */
+
+  /************** SegmentIo Client End */
+
   VisSense.Client = VisSense.Client || {}
 
   VisSense.Client.SegmentIO = function (segmentClient) {

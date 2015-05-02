@@ -41,7 +41,7 @@
 
         var client = {
           addEvent: function (eventCollection, data, consumer) {
-            var url = baseEndpoint + '/project/' + vishyConfig.id + '/event/' + eventCollection;
+            var url = baseEndpoint + '/openmrc/keenio/track/' + vishyConfig.id + '/' + eventCollection;
 
             var _data = Utils.extend(data, {
               vishy: {
