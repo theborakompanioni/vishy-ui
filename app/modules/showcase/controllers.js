@@ -3,9 +3,16 @@
 
   angular.module('org.tbk.vishy.ui.showcase.controllers')
 
+    .factory('ShowcaseClientFactory', ['$http', 'VisSense', 'tbkVishyConfig', 'tbkKeenClient',
+      function ($http, VisSense, tbkVishyConfig, tbkKeenClient) {
+
+        //return VisSense.Client.Vishy(tbkVishyConfig, $http);
+        return VisSense.Client.KeenIO(tbkKeenClient);
+      }])
+
     .controller('ShowcaseCtrl', [
-      '$window', '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'tbkVishyConfig', 'tbkKeenClient',
-      function ($window, $scope, $timeout, $http, VisSense, VisUtils, tbkVishyConfig, keenClient) {
+      '$window', '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'ShowcaseClientFactory',
+      function ($window, $scope, $timeout, $http, VisSense, VisUtils, ShowcaseClientFactory) {
         var autoStop = 90;
         $scope.model = {
           running: false,
@@ -51,19 +58,7 @@
               hidden: $scope.model.hidden
             });
 
-            /*
-             var simpleLoggingStandardMonitor =
-             VisSense.Client.Simple().monitorsWithLoggingClient().custom(visobj, {
-             interval: 1000,
-             throttle: 100,
-             inactiveAfter: $scope.model.inactiveAfter
-             });
-
-             monitors.push(simpleLoggingStandardMonitor);
-             */
-
-            /************** Vishy Client
-            var vishyMonitor = VisSense.Client.Vishy(tbkVishyConfig, $http)
+            var showcaseClient = ShowcaseClientFactory
               .monitors({
                 projectId: elementId
               }).custom(visobj, {
@@ -72,32 +67,19 @@
                 inactiveAfter: $scope.model.inactiveAfter
               });
 
-            monitors.push(vishyMonitor);
-            *************** Vishy Client End */
-
-            /************** Keenio Client */
-            var vishyMonitor = VisSense.Client.KeenIO(keenClient)
-              .monitors()
-              .custom(visobj, {
-                interval: 1000,
-                throttle: 100,
-                inactiveAfter: $scope.model.inactiveAfter
-              });
-
-            monitors.push(vishyMonitor);
-            /************* Keenio Client End */
+            monitors.push(showcaseClient);
           });
 
           VisUtils.forEach(monitors, function (monitor) {
             monitor.start();
           });
 
-          var removeBeforeUnloadStopCallback = (function() {
-            var eventId = $window.addEventListener('beforeunload', function() {
+          var removeBeforeUnloadStopCallback = (function () {
+            var eventId = $window.addEventListener('beforeunload', function () {
               stop();
             }, true);
 
-            return function() {
+            return function () {
               $window.removeEventListener('beforeunload', eventId, true);
             }
           })();
