@@ -3,7 +3,7 @@
 
   angular.module('org.tbk.vishy.ui.showcase.controllers')
 
-    .factory('ShowcaseClientFactory', ['$http', 'VisSense', 'tbkVishyConfig', 'tbkKeenClient',
+    .factory('ShowcaseMonitorFactory', ['$http', 'VisSense', 'tbkVishyConfig', 'tbkKeenClient',
       function ($http, VisSense, tbkVishyConfig, tbkKeenClient) {
 
         //return VisSense.Client.Vishy(tbkVishyConfig, $http);
@@ -11,15 +11,25 @@
       }])
 
     .controller('ShowcaseCtrl', [
-      '$window', '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'ShowcaseClientFactory',
-      function ($window, $scope, $timeout, $http, VisSense, VisUtils, ShowcaseClientFactory) {
+      '$window', '$scope', '$timeout', '$http', 'VisSense', 'VisUtils', 'ShowcaseMonitorFactory',
+      function ($window, $scope, $timeout, $http, VisSense, VisUtils, ShowcaseMonitorFactory) {
         var autoStop = 90;
         $scope.model = {
           running: false,
           autoStop: autoStop,
           autoStopCountdown: autoStop,
           inactiveAfter: 15000,
-          hidden: 0.4999
+          hidden: 0.4999,
+          requests: []
+        };
+        var resetRequestList = function() {
+          $scope.model.requests = [];
+        };
+        var addToRequestList = function(name, data) {
+          $scope.model.requests.push({
+            name: name,
+            data: data
+          });
         };
 
         var stop = angular.noop;
@@ -51,6 +61,7 @@
           $scope.model.running = true;
           $scope.model.autoStopCountdown = autoStop;
 
+          resetRequestList();
           var monitors = [];
           VisUtils.forEach(elementIds, function (elementId) {
             var element = angular.element('#' + elementId)[0];
@@ -58,7 +69,7 @@
               hidden: $scope.model.hidden
             });
 
-            var showcaseClient = ShowcaseClientFactory
+            var showcaseMonitor = ShowcaseMonitorFactory
               .monitors({
                 projectId: elementId
               }).custom(visobj, {
@@ -67,10 +78,23 @@
                 inactiveAfter: $scope.model.inactiveAfter
               });
 
-            monitors.push(showcaseClient);
+            monitors.push(showcaseMonitor);
           });
 
           VisUtils.forEach(monitors, function (monitor) {
+            monitor.on('visibility-initial-request', function(monitor, data) {
+              console.table(data);
+              addToRequestList('visibility-initial-request', data);
+            });
+            monitor.on('visibility-status-50/1', function(monitor, data) {
+              console.table(data);
+              addToRequestList('visibility-status-50/1', data);
+            });
+            monitor.on('visibility-time-report', function(monitor, data) {
+              console.table(data);
+              addToRequestList('visibility-time-report', data);
+            });
+
             monitor.start();
           });
 

@@ -146,6 +146,12 @@
     </p>
   </div>
 
+  <div class="row">
+    <div class="col-lg-4 col-md-6 col-sm-12" data-ng-repeat="request in model.requests">
+      <h4>{{request.name}}</h4>
+      <pre style="font-size: 11px;">{{ request.data | json }}</pre>
+    </div>
+  </div>
 
   <div class="row">
    <div class="col-md-12">

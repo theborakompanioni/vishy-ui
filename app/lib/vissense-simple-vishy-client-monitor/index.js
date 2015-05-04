@@ -62,8 +62,13 @@
           standard: function (visobj) {
             return VisSense.Client.Simple().monitors(client).standard(visobj);
           },
-          custom: function (visobj, config) {
-            return VisSense.Client.Simple().monitors(client).custom(visobj, config);
+          custom: function (visobj, options) {
+            return VisSense.Client.Simple().monitors(client).custom(visobj, options);
+          },
+          newBuilder: function (visobj, options) {
+            return VisSense.Client.Simple()
+              .monitors(client)
+              .newBuilder(visobj, options);
           }
         };
       }

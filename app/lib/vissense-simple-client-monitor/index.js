@@ -31,7 +31,7 @@
     });
   };
 
-  var send = function (client, eventCollection, event) {
+  var sendEventWithClient = function (client, eventCollection, event) {
     var data = addStandardProperties(event);
 
     client.addEvent(eventCollection, data, function (err/*, res*/) {
@@ -43,10 +43,6 @@
         // see sample response below
         console.info('successfully sent event ' + eventCollection);
       }
-
-      if (console.table) {
-        console.table(data);
-      }
     });
   };
 
@@ -56,18 +52,6 @@
     }
 
     return {
-      monitorsWithLoggingClient: function () {
-        return this.monitors({
-          addEvent: function (eventCollection, data, consumer) {
-            console.log('addEvent', eventCollection);
-
-            if (console.table) {
-              console.table(data);
-            }
-            consumer(null, data);
-          }
-        });
-      },
       monitors: function (externalClient) {
         var client = {
           addEvent: function (eventCollection, data, consumer) {
@@ -77,13 +61,12 @@
 
         return {
           standard: function (visobj) {
-            return this.custom(visobj, {
-              interval: 1000,
-              throttle: 100,
-              inactiveAfter: 60000
-            });
+            return this.newBuilder(visobj).build();
           },
           custom: function (visobj, options) {
+            return this.newBuilder(visobj, options).build();
+          },
+          newBuilder: function (visobj, options) {
             var config = Utils.defaults(options, {
               interval: 1000,
               throttle: 100,
@@ -97,54 +80,67 @@
                 inactiveAfter: config.inactiveAfter
               }));
 
-            return this.prepareBuilder(builder).build();
+            return this.prepareBuilder(builder);
           },
           prepareBuilder: function (builder) {
             var monitorId = uuid();
 
             var r = monitorId.substring(0, 7);
-            var asEventName = function (eventName) {
+            var asInternalEventName = function (eventName) {
               return r + '#' + eventName;
             };
 
-            var initEventName = asEventName('initial-state');
-            var status501TestPassedEventName = asEventName('ptt50/1');
-            var summaryEventName = asEventName('time-summary');
+            var initEventName = 'visibility-initial-request';
+            var status501TestPassedEventName = 'visibility-status-50/1';
+            var summaryEventName = 'visibility-time-report';
+
+            var internalInitEventName = asInternalEventName(initEventName);
+            var internalStatus501TestPassedEventName = asInternalEventName(status501TestPassedEventName);
+            var internalSummaryEventName = asInternalEventName(summaryEventName);
 
             return builder
               .strategy(new VisSense.VisMon.Strategy.MetricsStrategy())
-              .strategy(VisSense.Client.Helpers.Simple.newInitialStateEventStrategy(initEventName))
-              .on(initEventName, function (monitor, state) {
-                send(client, 'visibility-initial-request', {
-                  monitorId: monitorId,
-                  initial: true,
-                  state: state
-                });
-              })
-              .strategy(VisSense.VisMon.Strategy.PercentageTimeTestEventStrategy(status501TestPassedEventName, {
+              .strategy(VisSense.Client.Helpers.Simple.newInitialStateEventStrategy(internalInitEventName))
+              .strategy(VisSense.VisMon.Strategy.PercentageTimeTestEventStrategy(internalStatus501TestPassedEventName, {
                 percentageLimit: 0.5,
                 timeLimit: 1000,
                 interval: 100
               }))
-              .on(status501TestPassedEventName, function (monitor, data) {
+              .strategy(VisSense.Client.Helpers.Simple.createSummaryEventStrategy(internalSummaryEventName))
+              .on(internalInitEventName, function (monitor, state) {
+                var initEventData = {
+                  monitorId: monitorId,
+                  initial: true,
+                  state: state
+                };
 
+                sendEventWithClient(client, 'visibility-initial-request', initEventData);
+
+                monitor.publish(initEventName, [monitor, initEventData]);
+              })
+              .on(internalStatus501TestPassedEventName, function (monitor, data) {
                 var timeReport = VisSense.Client.Helpers.Simple.createTimeReport(monitor.metrics());
 
                 var dataWithTimeReport = Utils.extend(data, {
                   timeReport: timeReport
                 });
 
-                send(client, 'visibility-percentage-time-test', {
+                var status501TestPassedEventData = {
                   monitorId: monitorId,
                   test: dataWithTimeReport
-                });
+                };
+
+                sendEventWithClient(client, 'visibility-percentage-time-test', status501TestPassedEventData);
+                monitor.publish(status501TestPassedEventName, [monitor, status501TestPassedEventData]);
               })
-              .strategy(VisSense.Client.Helpers.Simple.createSummaryEventStrategy(summaryEventName))
-              .on(summaryEventName, function (monitor, timeReport) {
-                send(client, 'visibility-time-report', {
+              .on(internalSummaryEventName, function (monitor, timeReport) {
+                var summaryEventData = {
                   monitorId: monitorId,
                   report: timeReport
-                });
+                };
+
+                sendEventWithClient(client, 'visibility-time-report', summaryEventData);
+                monitor.publish(summaryEventName, [monitor, summaryEventData]);
               });
           }
         };
