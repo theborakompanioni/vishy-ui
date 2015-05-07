@@ -28,6 +28,21 @@
           templateUrl: 'partials/info.html',
           controller: 'NoopCtrl'
         })
+        .state('product', {
+          abstract: true,
+          url: '/product',
+          template: '<ui-view/>'
+        })
+        .state('product.overview', {
+          url: '/overview',
+          templateUrl: 'partials/product/home.html',
+          controller: 'NoopCtrl'
+        })
+        .state('product.pricing', {
+          url: '/pricing',
+          templateUrl: 'partials/product/pricing.html',
+          controller: 'PricingCtrl'
+        })
         .state('app', {
           abstract: true,
           url: '/app',
