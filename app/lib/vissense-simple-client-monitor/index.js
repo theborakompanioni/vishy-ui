@@ -109,6 +109,7 @@
               .strategy(VisSense.Client.Helpers.Simple.createSummaryEventStrategy(internalSummaryEventName))
               .on(internalInitEventName, function (monitor, state) {
                 var initEventData = {
+                  type: 'initial',
                   monitorId: monitorId,
                   initial: true,
                   state: state
@@ -126,6 +127,7 @@
                 });
 
                 var status501TestPassedEventData = {
+                  type: 'status',
                   monitorId: monitorId,
                   test: dataWithTimeReport
                 };
@@ -135,6 +137,7 @@
               })
               .on(internalSummaryEventName, function (monitor, timeReport) {
                 var summaryEventData = {
+                  type: 'summary',
                   monitorId: monitorId,
                   report: timeReport
                 };
