@@ -16,7 +16,7 @@
     position: relative;
     background-color: #e5e5e5;
     cursor: pointer;
-    padding: 40px;
+    padding: 43px;
     width: 300px;
     margin: 0 auto;
     z-index: 99999;
@@ -56,7 +56,9 @@
   }
 </style>
 
+
 <div class="container">
+
   <!--div data-tbk-vishy-particle-gravity-animation></div-->
   <div data-tbk-vishy-bubbles-animation></div>
 
@@ -112,4 +114,48 @@
 
   </div>
 
+  <div class="row" style="background-color:#3D4A57;margin-top:99px;">
+    <div class="col-md-12" style="text-align:center;padding-bottom:13px; height:190px;">
+      <h2 style="text-align:center;color:white;font-weight:400;font-size:40px">See it in action!</h2>
+
+      <p style="text-align:center;color:white;font-weight:400;font-size:20px;">Preview and interact with our live demo
+        get the real feel of the dashboard in action.</p>
+      <a class="btn btn-primary btn-lg"
+         data-ui-sref="dashboard.home">
+        Live Demo Dashboard
+      </a>
+    </div>
+  </div>
+
+  <script async>
+
+    (function (i, s, o, g, r, a, m) {
+      i['VishyObject'] = r;
+      i[r] = i[r] || function (key, name) {
+          (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+      a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+      a.async = 1;
+      a.src = g;
+      m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//localhost:8080/static/vishy-analytics/dist/vishy-analytics.min.js', 'vishy');
+
+    vishy('init', 'UA-48540954-6', 'auto');
+
+    vishy('create', 'myElement', {
+      projectId: '42',
+      readKey: '%%vishy.readKey%%',
+      writeKey: '%%vishy.writeKey%%',
+      protocol: 'http',
+      host: 'localhost',
+      port: 8080,
+      requestType: 'xhr'
+    });
+
+    vishy('start', function(monitor) {
+      console.log('monitor started');
+    });
+  </script>
 </div>
+
