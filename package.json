@@ -1,6 +1,6 @@
 {
   "name": "vishy-ui",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "scripts": {
     "build": "gulp default",
     "test": "gulp test --verbose"
