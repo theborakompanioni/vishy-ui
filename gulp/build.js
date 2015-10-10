@@ -1,9 +1,14 @@
 'use strict';
 
+var fs = require('fs');
 var gulp = require('gulp');
+var pkg = require('../package.json');
+var replace = require('gulp-replace-task');
 var mainBowerFiles = require('main-bower-files');
 
 var $ = require('gulp-load-plugins')();
+
+var vishySettings = pkg.vishySettings;
 
 gulp.task('styles', [], function () {
 
@@ -28,6 +33,15 @@ gulp.task('partials', function () {
   return gulp.src([
     'app/partials/**/*.html'
   ])
+    .pipe(replace({
+      patterns: [{
+        match: 'vishy_script_src',
+        replacement: vishySettings.scriptSrc
+      }, {
+        match: 'vishy_client_options',
+        replacement: JSON.stringify(vishySettings.clientOptions)
+      }]
+    }))
     .pipe($.minifyHtml({
       empty: true,
       spare: true,

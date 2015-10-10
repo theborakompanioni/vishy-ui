@@ -114,7 +114,7 @@
 
   </div>
 
-  <div class="row" style="background-color:#3D4A57;margin-top:99px;">
+  <div class="row" style="background-color:#3D4A57; margin-top:69px;">
     <div class="col-md-12" style="text-align:center;padding-bottom:13px; height:190px;">
       <h2 style="text-align:center;color:white;font-weight:400;font-size:40px">See it in action!</h2>
 
@@ -126,9 +126,7 @@
       </a>
     </div>
   </div>
-
   <script async>
-
     (function (i, s, o, g, r, a, m) {
       i['VishyObject'] = r;
       i[r] = i[r] || function (key, name) {
@@ -139,21 +137,13 @@
       a.async = 1;
       a.src = g;
       m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//openmrc.herokuapp.com/static/vishy-analytics/dist/vishy-analytics.min.js', 'vishy');
+    })(window, document, 'script', '@@vishy_script_src', 'vishy');
 
     vishy('init', 'UA-48540954-6', 'auto');
 
-    vishy('create', 'myElement', {
-      projectId: '42',
-      readKey: '%%vishy.readKey%%',
-      writeKey: '%%vishy.writeKey%%',
-      protocol: 'https',
-      host: 'openmrc.herokuapp.com',
-      port: 443,
-      requestType: 'xhr'
-    });
+    vishy('create', 'myElement', @@vishy_client_options);
 
-    vishy('start', function(monitor) {
+    vishy('start', function (monitor) {
       console.log('monitor started');
     });
   </script>
