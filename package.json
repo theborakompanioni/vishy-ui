@@ -6,15 +6,15 @@
     "test": "gulp test --verbose"
   },
   "vishySettings": {
-    "scriptSrc": "//88.80.205.226:9999/static/vishy-analytics/dist/vishy-analytics.min.js",
-    "scriptSrcAlternative": "//openmrc.herokuapp.com/static/vishy-analytics/dist/vishy-analytics.min.js",
+    "scriptSrc": "//localhost:8080/static/vishy-analytics/dist/vishy-analytics.min.js",
+    "scriptSrcAlternative": "//88.80.205.226:9999/static/vishy-analytics/dist/vishy-analytics.min.js",
     "clientOptions": {
       "projectId": "42",
       "readKey": "%%vishy.readKey%%",
       "writeKey": "%%vishy.writeKey%%",
       "protocol": "http",
-      "host": "88.80.205.226",
-      "port": 9999,
+      "host": "localhost",
+      "port": 8080,
       "requestType": "xhr"
     }
   },
