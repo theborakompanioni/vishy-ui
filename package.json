@@ -6,8 +6,8 @@
     "test": "gulp test --verbose"
   },
   "vishySettings": {
-    "scriptSrc": "//localhost:8080/static/vishy-analytics/dist/vishy-analytics.min.js",
-    "scriptSrcAlternative": "//88.80.205.226:9999/static/vishy-analytics/dist/vishy-analytics.min.js",
+    "scriptSrc": "//localhost:8080/openmrc/vishy/demo.js?elementId=myElement",
+    "scriptSrcAlternative": "//88.80.205.226:9999/openmrc/vishy/demo.js?elementId=myElement",
     "clientOptions": {
       "projectId": "42",
       "readKey": "%%vishy.readKey%%",
